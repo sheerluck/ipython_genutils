@@ -160,46 +160,7 @@ def skipif(skip_condition, msg=None):
     '''
 
     def skip_decorator(f):
-        # Local import to avoid a hard nose dependency and only incur the
-        # import time overhead at actual test-time.
-        import nose
-
-        # Allow for both boolean or callable skip conditions.
-        if callable(skip_condition):
-            skip_val = skip_condition
-        else:
-            skip_val = lambda : skip_condition
-
-        def get_msg(func,msg=None):
-            """Skip message with information about function being skipped."""
-            if msg is None: out = 'Test skipped due to test condition.'
-            else: out = msg
-            return "Skipping test: %s. %s" % (func.__name__,out)
-
-        # We need to define *two* skippers because Python doesn't allow both
-        # return with value and yield inside the same function.
-        def skipper_func(*args, **kwargs):
-            """Skipper for normal test functions."""
-            if skip_val():
-                raise nose.SkipTest(get_msg(f,msg))
-            else:
-                return f(*args, **kwargs)
-
-        def skipper_gen(*args, **kwargs):
-            """Skipper for test generators."""
-            if skip_val():
-                raise nose.SkipTest(get_msg(f,msg))
-            else:
-                for x in f(*args, **kwargs):
-                    yield x
-
-        # Choose the right skipper to use when building the actual generator.
-        if nose.util.isgenerator(f):
-            skipper = skipper_gen
-        else:
-            skipper = skipper_func
-
-        return nose.tools.make_decorator(f)(skipper)
+        return f(*args, **kwargs)
 
     return skip_decorator
 
